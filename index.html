@@ -3,272 +3,218 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Renal Dose Calculator 🩺</title>
+    <title>Clinical Drug Reference: Max Dose & Renal Adjustment</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; padding: 20px; max-width: 700px; margin: auto; background-color: #f0f2f5; }
-        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #333; margin-top: 0; }
-        .radio-group { margin-bottom: 20px; padding: 10px; background: #e9ecef; border-radius: 8px; }
-        label { font-weight: bold; color: #555; display: block; margin-top: 10px; margin-bottom: 5px; }
-        .radio-group label, .checkbox-item label { display: inline; font-weight: normal; cursor: pointer; margin: 0; }
-        input[type="number"], input[type="text"], select { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; font-size: 16px; }
-        
-        .search-box { margin-bottom: 15px; }
-        .drug-container { max-height: 350px; overflow-y: auto; padding-right: 10px; }
-        .category-section { margin-bottom: 15px; background: #fafafa; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; }
-        .category-title { background: #e2e3e5; padding: 8px 15px; font-weight: bold; color: #333; margin: 0; font-size: 0.95em; border-bottom: 1px solid #ddd; }
-        .checkbox-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; padding: 12px; }
-        .checkbox-item { display: flex; align-items: center; gap: 8px; padding: 5px; border-radius: 4px; }
-        .checkbox-item:hover { background-color: #e9ecef; }
-        .checkbox-item input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
-        
-        button { width: 100%; background-color: #0d6efd; color: white; font-weight: bold; cursor: pointer; border: none; padding: 12px; font-size: 16px; border-radius: 6px; margin-top: 20px; transition: 0.3s; }
-        button:hover { background-color: #0b5ed7; }
-        button:disabled { background-color: #6c757d; cursor: not-allowed; }
-        
-        #result { margin-top: 20px; padding: 15px; border-radius: 8px; display: none; background-color: #e2e3e5; border: 1px solid #d6d8db; }
-        .result-card { background: white; border-radius: 8px; padding: 15px; margin-top: 15px; border-left: 5px solid #198754; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .result-card.warning { border-left-color: #ffc107; }
-        .result-card.danger { border-left-color: #dc3545; }
-        .status-text { text-align: center; color: #0d6efd; font-weight: bold; margin-bottom: 15px; }
-        .metric-badge { font-size: 0.8em; background: #e9ecef; padding: 3px 8px; border-radius: 12px; color: #495057; font-weight: bold; margin-left: 10px; }
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --bg: #f8f9fa;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--primary);
+            padding: 20px;
+            max-width: 1200px;
+            margin: auto;
+        }
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 30px;
+        }
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        input, select {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            flex: 1;
+            min-width: 200px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background-color: var(--primary);
+            color: white;
+        }
+        tr:hover {
+            background-color: #f1f4f8;
+        }
+        a.uptodate-btn {
+            display: inline-block;
+            padding: 6px 12px;
+            background-color: var(--secondary);
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        a.uptodate-btn:hover {
+            background-color: #2980b9;
+        }
+        /* Tooltip styling */
+        .tooltip {
+            position: relative;
+            cursor: help;
+            border-bottom: 1px dashed #3498db;
+            color: #d35400;
+            font-weight: 500;
+        }
+        .tooltip:hover::after {
+            content: attr(data-ref);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 10;
+            margin-bottom: 5px;
+        }
+        .tag {
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            background: #e0e0e0;
+            color: #333;
+        }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2>คำนวณค่าไต & ปรับขนาดยา 🩺</h2>
-    
-    <div class="radio-group">
-        <label><input type="radio" name="calcType" value="calculate" checked onchange="toggleInputs()"> คำนวณใหม่ (ได้ทั้ง CrCl และ eGFR)</label><br>
-        <label><input type="radio" name="calcType" value="direct" onchange="toggleInputs()"> ทราบค่าจากผลแล็บแล้ว</label>
+    <h1>💊 Drug Reference: Max Dose & Renal Adjustment</h1>
+
+    <div class="controls">
+        <input type="text" id="searchInput" placeholder="พิมพ์ชื่อยาเพื่อค้นหา (เช่น Metformin)...">
+        <select id="classFilter">
+            <option value="All">แสดงทั้งหมด (เรียงตามตัวอักษร)</option>
+            <option value="Antidiabetic">Antidiabetic (ยาเบาหวาน)</option>
+            <option value="Antihypertensive">Antihypertensive (ยาลดความดัน)</option>
+            <option value="Antianginal">Antianginal</option>
+            <option value="Diuretics">Diuretics (ยาขับปัสสาวะ)</option>
+            <option value="Digoxin">Digoxin</option>
+            <option value="Antibiotics">Antibiotics (ยาฆ่าเชื้อ)</option>
+        </select>
     </div>
 
-    <!-- โหมดคำนวณ -->
-    <div id="calcInputBox">
-        <label>เพศ:</label>
-        <select id="gender"><option value="M">ชาย (Male)</option><option value="F">หญิง (Female)</option></select>
-        <div style="display: flex; gap: 10px;">
-            <div style="flex: 1;"><label>อายุ (ปี):</label><input type="number" id="age"></div>
-            <div style="flex: 1;"><label>น้ำหนัก (กก.):</label><input type="number" id="weight"></div>
-        </div>
-        <label>Serum Creatinine (mg/dL):</label><input type="number" id="scr" step="0.1">
-    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Drug Name</th>
+                <th>Max Dose</th>
+                <th>ไตเริ่มมีปัญหาที่ (CrCl/eGFR) เล็งเพื่อดู Ref.</th>
+                <th>UpToDate Link</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+            <!-- ข้อมูลจะถูก render ด้วย JavaScript -->
+        </tbody>
+    </table>
 
-    <!-- โหมดกรอกตรง แยกกล่องชัดเจน -->
-    <div id="directInputBox" style="display: none;">
-        <p style="color: #dc3545; font-size: 0.9em; margin-top: 0;">* กรอกเฉพาะค่าที่มี ยาบางตัวอาจต้องการแค่ค่าใดค่าหนึ่ง</p>
-        <div style="display: flex; gap: 10px;">
-            <div style="flex: 1;">
-                <label>CrCl (mL/min):</label>
-                <input type="number" id="directCrCl" placeholder="เช่น 45">
-            </div>
-            <div style="flex: 1;">
-                <label>eGFR (mL/min/1.73m²):</label>
-                <input type="number" id="directEGFR" placeholder="เช่น 50">
-            </div>
-        </div>
-    </div>
-
-    <hr style="margin: 20px 0; border-top: 1px solid #ddd;">
-
-    <label>เลือกยาที่ต้องการจ่าย (เลือกได้หลายตัว):</label>
-    <div id="loadingStatus" class="status-text">⏳ กำลังโหลดฐานข้อมูลยา...</div>
-    
-    <div id="drugSelectionArea" style="display: none;">
-        <input type="text" id="searchDrug" class="search-box" placeholder="🔍 พิมพ์เพื่อค้นหายา..." onkeyup="filterDrugs()">
-        <div id="drugListContainer" class="drug-container"></div>
-    </div>
-
-    <button id="calcBtn" onclick="processData()" disabled>คำนวณและตรวจสอบขนาดยา</button>
-
-    <div id="result"></div>
-</div>
-
-<script>
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzcCC5mimDWTiqE8sd5Fl7UZFyd95UVgyR0dtJFs-TnlVCC6Cxqt_pEzyOWzPAwU6LXxw/exec';
-    let globalDrugData = [];
-
-    window.onload = async function() {
-        try {
-            const response = await fetch(WEB_APP_URL);
-            globalDrugData = await response.json();
+    <script>
+        // 1. จำลอง Database (สามารถเพิ่มยาลงใน Array นี้ได้เลย)
+        const drugDatabase = [
+            // --- Antidiabetic ---
+            { name: "Metformin", class: "Antidiabetic", maxDose: "2,550 mg/day", renal: "eGFR < 45 (เริ่มปรับ) / < 30 (Contraindicated)", ref: "ADA Standards of Care in Diabetes (2026) / FDA Label" },
+            { name: "Sitagliptin", class: "Antidiabetic", maxDose: "100 mg/day", renal: "eGFR < 45 (ลดเหลือ 50mg) / < 30 (ลดเหลือ 25mg)", ref: "FDA Approved Labeling" },
+            { name: "Empagliflozin", class: "Antidiabetic", maxDose: "25 mg/day", renal: "eGFR < 30 (ห้ามเริ่ม/หยุดใช้ ยกเว้น HFrEF หรือ CKD ตามไกด์ไลน์ใหม่)", ref: "FDA Approved Labeling / KDIGO" },
             
-            const categoryMap = {};
-            globalDrugData.forEach(item => {
-                if (item.DrugName) {
-                    const drugName = item.DrugName.toString().trim().toLowerCase();
-                    const category = item.Category ? item.Category.toString().trim() : 'อื่นๆ (Others)';
-                    if (!categoryMap[category]) categoryMap[category] = new Set();
-                    categoryMap[category].add(drugName);
-                }
-            });
-
-            const container = document.getElementById('drugListContainer');
-            container.innerHTML = '';
+            // --- Cardio: Antihypertensive & Antianginal ---
+            { name: "Amlodipine", class: "Antihypertensive", maxDose: "10 mg/day", renal: "ไม่ต้องปรับขนาดยาตามค่าไต", ref: "AHA/ACC Hypertension Guidelines" },
+            { name: "Enalapril", class: "Antihypertensive", maxDose: "40 mg/day", renal: "CrCl < 30 (ลดขนาดเริ่มต้นเหลือ 2.5 mg/day)", ref: "FDA Approved Labeling" },
+            { name: "Losartan", class: "Antihypertensive", maxDose: "100 mg/day", renal: "ไม่ต้องปรับ (แต่เฝ้าระวัง K+ และ Cr เปลี่ยนแปลง)", ref: "FDA Approved Labeling" },
             
-            Object.keys(categoryMap).sort().forEach(cat => {
-                const section = document.createElement('div');
-                section.className = 'category-section';
-                section.innerHTML = `<h4 class="category-title">${cat}</h4>`;
-                
-                const grid = document.createElement('div');
-                grid.className = 'checkbox-grid';
-                
-                Array.from(categoryMap[cat]).sort().forEach(drug => {
-                    const div = document.createElement('div');
-                    div.className = 'checkbox-item';
-                    div.innerHTML = `<input type="checkbox" value="${drug}" id="chk_${drug}"><label for="chk_${drug}">${drug}</label>`;
-                    grid.appendChild(div);
-                });
-                
-                section.appendChild(grid);
-                container.appendChild(section);
-            });
-
-            document.getElementById('loadingStatus').style.display = 'none';
-            document.getElementById('drugSelectionArea').style.display = 'block';
-            document.getElementById('calcBtn').disabled = false;
-        } catch (error) {
-            document.getElementById('loadingStatus').innerHTML = '❌ เชื่อมต่อ Sheet ไม่ได้';
-            document.getElementById('loadingStatus').style.color = '#dc3545';
-        }
-    };
-
-    function filterDrugs() {
-        const term = document.getElementById('searchDrug').value.toLowerCase();
-        const sections = document.querySelectorAll('.category-section');
-        sections.forEach(section => {
-            let hasVisibleItem = false;
-            section.querySelectorAll('.checkbox-item').forEach(item => {
-                if (item.innerText.toLowerCase().includes(term)) {
-                    item.style.display = 'flex';
-                    hasVisibleItem = true;
-                } else {
-                    item.style.display = 'none';
-                }
-            });
-            section.style.display = hasVisibleItem ? 'block' : 'none';
-        });
-    }
-
-    function toggleInputs() {
-        const type = document.querySelector('input[name="calcType"]:checked').value;
-        document.getElementById('calcInputBox').style.display = type === 'calculate' ? 'block' : 'none';
-        document.getElementById('directInputBox').style.display = type === 'direct' ? 'block' : 'none';
-    }
-
-    function processData() {
-        const resultDiv = document.getElementById('result');
-        const calcType = document.querySelector('input[name="calcType"]:checked').value;
-        
-        let userCrCl = null;
-        let userEGFR = null;
-
-        if (calcType === 'calculate') {
-            const age = parseFloat(document.getElementById('age').value);
-            const weight = parseFloat(document.getElementById('weight').value);
-            const scr = parseFloat(document.getElementById('scr').value);
-            const gender = document.getElementById('gender').value;
-
-            if (!age || !weight || !scr) { alert("กรุณากรอก อายุ, น้ำหนัก และ SCr ให้ครบ"); return; }
+            // --- Cardio: Diuretics ---
+            { name: "Hydrochlorothiazide", class: "Diuretics", maxDose: "50 mg/day", renal: "CrCl < 30 (ยาไม่มีประสิทธิภาพ แนะนำ Loop diuretic)", ref: "FDA Approved Labeling" },
+            { name: "Furosemide", class: "Diuretics", maxDose: "600 mg/day (Severe CHF/Renal)", renal: "ไม่ต้องปรับ แต่ eGFR ต่ำอาจต้องใช้ Dose เริ่มต้นที่สูงขึ้น", ref: "AHA/ACC Heart Failure Guidelines" },
             
-            // คำนวณ CrCl (Cockcroft-Gault)
-            userCrCl = ((140 - age) * weight) / (72 * scr);
-            if (gender === 'F') userCrCl *= 0.85;
+            // --- Cardio: Digoxin ---
+            { name: "Digoxin", class: "Digoxin", maxDose: "Maintenance 0.125 - 0.25 mg/day", renal: "CrCl < 50 (ลด Dose หรือยืด Interval)", ref: "FDA Approved Labeling / AHA HF Guidelines" },
 
-            // คำนวณ eGFR (CKD-EPI 2021)
-            if (gender === 'F') {
-                userEGFR = scr <= 0.7 
-                    ? 142 * Math.pow(scr/0.7, -0.241) * Math.pow(0.9938, age) * 1.012 
-                    : 142 * Math.pow(scr/0.7, -1.200) * Math.pow(0.9938, age) * 1.012;
-            } else {
-                userEGFR = scr <= 0.9 
-                    ? 142 * Math.pow(scr/0.9, -0.302) * Math.pow(0.9938, age) 
-                    : 142 * Math.pow(scr/0.9, -1.200) * Math.pow(0.9938, age);
-            }
-        } else {
-            userCrCl = parseFloat(document.getElementById('directCrCl').value) || null;
-            userEGFR = parseFloat(document.getElementById('directEGFR').value) || null;
-            
-            if (userCrCl === null && userEGFR === null) {
-                alert("กรุณาระบุค่า CrCl หรือ eGFR อย่างน้อย 1 ค่า");
-                return;
-            }
+            // --- Antibiotics ---
+            { name: "Amoxicillin", class: "Antibiotics", maxDose: "4 g/day (High-dose)", renal: "CrCl < 30 (ปรับ Interval เป็น q12h หรือ q24h)", ref: "Sanford Guide to Antimicrobial Therapy" },
+            { name: "Ciprofloxacin", class: "Antibiotics", maxDose: "PO: 1,500 mg/day | IV: 1,200 mg/day", renal: "CrCl < 50 (เริ่มปรับ Dose หรือ Interval)", ref: "Sanford Guide to Antimicrobial Therapy", uptodateOverride: "ciprofloxacin-systemic" },
+            { name: "Meropenem", class: "Antibiotics", maxDose: "6 g/day (Meningitis 2g q8h)", renal: "CrCl < 50 (ลด Dose และปรับ Interval)", ref: "Sanford Guide to Antimicrobial Therapy" },
+            { name: "Levofloxacin", class: "Antibiotics", maxDose: "750 mg/day", renal: "CrCl < 50 (ปรับ Loading และ Maintenance dose)", ref: "Sanford Guide to Antimicrobial Therapy", uptodateOverride: "levofloxacin-systemic" }
+        ];
+
+        // 2. ฟังก์ชันสร้างลิงก์ UpToDate ตามที่คุยกันไว้ (รองรับ manual override บัคเช่น ciprofloxacin-systemic)
+        function getUptodateLink(drug) {
+            let pathName = drug.uptodateOverride 
+                ? drug.uptodateOverride 
+                : drug.name.toLowerCase().trim().replace(/\s+/g, '-');
+            return `https://www.uptodate.com/contents/${pathName}-drug-information?sectionName=Kidney%20Impairment%20(Adult)`;
         }
 
-        const selectedDrugs = Array.from(document.querySelectorAll('#drugListContainer input[type="checkbox"]:checked')).map(cb => cb.value);
+        // 3. ฟังก์ชัน Render ตาราง
+        function renderTable(data) {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = ''; // ล้างค่าเก่า
 
-        if (selectedDrugs.length === 0) { alert("กรุณาเลือกยาอย่างน้อย 1 ตัว"); return; }
+            // จัดเรียงตามตัวอักษรเสมอ (Show all เรียง A-Z)
+            const sortedData = [...data].sort((a, b) => a.name.localeCompare(b.name));
 
-        let htmlOutput = `<h3 style="margin-top:0; color:#333;">✅ สรุปผลค่าการทำงานของไต</h3>`;
-        htmlOutput += `<div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #ccc; margin-bottom: 20px;">`;
-        if (userCrCl !== null) htmlOutput += `<p style="margin: 5px 0;"><strong>CrCl (Cockcroft-Gault):</strong> <span style="color: #0d6efd; font-size: 1.1em; font-weight: bold;">${userCrCl.toFixed(2)}</span> mL/min</p>`;
-        if (userEGFR !== null) htmlOutput += `<p style="margin: 5px 0;"><strong>eGFR (CKD-EPI 2021):</strong> <span style="color: #198754; font-size: 1.1em; font-weight: bold;">${userEGFR.toFixed(2)}</span> mL/min/1.73m²</p>`;
-        htmlOutput += `</div>`;
-
-        selectedDrugs.forEach(drugName => {
-            const drugRecords = globalDrugData.filter(item => item.DrugName && item.DrugName.toString().toLowerCase() === drugName);
-            
-            // ตรวจสอบว่ายานี้ต้องการค่าไตประเภทไหน (อิงจากแถวแรกของยาใน Sheet)
-            let requiredType = 'CrCl'; // ค่าเริ่มต้น
-            if (drugRecords.length > 0 && drugRecords[0].Type) {
-                requiredType = drugRecords[0].Type.toString().trim().toUpperCase().includes('EGFR') ? 'eGFR' : 'CrCl';
-            }
-
-            // เลือกค่าไตมาใช้ให้ตรงกับที่ยาต้องการ
-            const referenceValue = (requiredType === 'eGFR') ? userEGFR : userCrCl;
-
-            // กรณีผู้ใช้ไม่ได้กรอกค่าไตที่ยานี้บังคับใช้
-            if (referenceValue === null) {
-                htmlOutput += `
-                    <div class="result-card danger">
-                        <p style="margin:0 0 10px 0; font-size:1.1em;"><strong>💊 ยา:</strong> ${drugName.toUpperCase()}</p>
-                        <p style="margin:0; color: #dc3545;">⚠️ <strong>คำเตือน:</strong> ยานี้อ้างอิงการปรับขนาดตาม <strong>${requiredType}</strong> แต่คุณไม่ได้ระบุค่าดังกล่าว โปรดระบุค่า ${requiredType} เพื่อความปลอดภัย</p>
-                    </div>`;
-                return; // ข้ามไปยาตัวถัดไป
-            }
-
-            let matchedDose = null;
-            for (let record of drugRecords) {
-                const min = parseFloat(record.Min_Clearance);
-                const max = parseFloat(record.Max_Clearance);
-                if (referenceValue >= min && referenceValue <= max) {
-                    matchedDose = record;
-                    break;
-                }
-            }
-
-            if (matchedDose) {
-                const doseText = matchedDose.Dose ? matchedDose.Dose.toLowerCase() : '';
-                let cardClass = "result-card";
-                if (doseText.includes("ห้ามใช้") || doseText.includes("avoid")) cardClass += " danger";
-                else if (!doseText.includes("normal") && referenceValue < 60) cardClass += " warning";
-
-                htmlOutput += `
-                    <div class="${cardClass}">
-                        <p style="margin:0 0 10px 0; font-size:1.1em;">
-                            <strong>💊 ยา:</strong> ${drugName.toUpperCase()} 
-                            <span class="metric-badge">อ้างอิงตาม ${requiredType}</span>
-                        </p>
-                        <p style="margin:5px 0;"><strong>ขนาดยาแนะนำ:</strong> <span style="color: #d32f2f; font-weight: bold;">${matchedDose.Dose}</span></p>
-                        ${matchedDose.Note ? `<p style="margin:5px 0; color:#555;"><strong>หมายเหตุ:</strong> ${matchedDose.Note}</p>` : ''}
-                    </div>
+            sortedData.forEach(drug => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        <strong>${drug.name}</strong><br>
+                        <span class="tag">${drug.class}</span>
+                    </td>
+                    <td>${drug.maxDose}</td>
+                    <td>
+                        <span class="tooltip" data-ref="Ref: ${drug.ref}">${drug.renal}</span>
+                    </td>
+                    <td>
+                        <a href="${getUptodateLink(drug)}" class="uptodate-btn" target="_blank">🔗 Uptodate (Max Dose)</a>
+                    </td>
                 `;
-            } else {
-                htmlOutput += `
-                    <div class="result-card danger">
-                        <p style="margin:0 0 10px 0; font-size:1.1em;"><strong>💊 ยา:</strong> ${drugName.toUpperCase()}</p>
-                        <p style="margin:0; color: #dc3545;">⚠️ ไม่มีข้อมูลคำแนะนำสำหรับค่า ${requiredType} = ${referenceValue.toFixed(2)} ในตาราง</p>
-                    </div>
-                `;
-            }
-        });
+                tbody.appendChild(tr);
+            });
+        }
 
-        resultDiv.innerHTML = htmlOutput;
-        resultDiv.style.display = "block";
-    }
-</script>
+        // 4. ฟังก์ชัน Filter ค้นหาและหมวดหมู่
+        function filterData() {
+            const searchText = document.getElementById('searchInput').value.toLowerCase();
+            const classVal = document.getElementById('classFilter').value;
 
+            const filtered = drugDatabase.filter(drug => {
+                const matchName = drug.name.toLowerCase().includes(searchText);
+                const matchClass = classVal === 'All' || drug.class === classVal;
+                return matchName && matchClass;
+            });
+
+            renderTable(filtered);
+        }
+
+        // 5. ดักจับ Event เมื่อพิมพ์หรือเปลี่ยน Dropdown
+        document.getElementById('searchInput').addEventListener('input', filterData);
+        document.getElementById('classFilter').addEventListener('change', filterData);
+
+        // Render ครั้งแรกตอนเปิดเว็บ
+        renderTable(drugDatabase);
+    </script>
 </body>
 </html>
