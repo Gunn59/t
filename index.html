@@ -3,119 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clinical Drug Reference: Max Dose & Renal Adjustment</title>
+    <title>Renal Dose & Max Dose Finder (Full Version)</title>
     <style>
-        :root {
-            --primary: #2c3e50;
-            --secondary: #3498db;
-            --bg: #f8f9fa;
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background-color: #f8fafc; color: #1e293b; }
+        h2 { color: #0f172a; text-align: center; margin-bottom: 25px; }
+        .controls { display: flex; gap: 15px; margin-bottom: 20px; justify-content: center; flex-wrap: wrap; }
+        input, select { padding: 12px; font-size: 16px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; }
+        input { width: 350px; }
+        table { width: 100%; border-collapse: collapse; background: #fff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden; }
+        th, td { padding: 16px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        th { background-color: #1e293b; color: white; cursor: pointer; white-space: nowrap; }
+        tr:hover { background-color: #f1f5f9; }
+        
+        .tooltip { position: relative; cursor: help; color: #ea580c; font-weight: bold; border-bottom: 1px dotted #ea580c; }
+        .tooltip .tooltiptext {
+            visibility: hidden; width: 300px; background-color: #1e293b; color: #fff; text-align: left;
+            border-radius: 6px; padding: 12px; position: absolute; z-index: 1;
+            bottom: 125%; left: 50%; transform: translateX(-50%); opacity: 0; transition: opacity 0.2s;
+            font-weight: normal; font-size: 14px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); line-height: 1.5;
         }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg);
-            color: var(--primary);
-            padding: 20px;
-            max-width: 1200px;
-            margin: auto;
+        .tooltip:hover .tooltiptext { visibility: visible; opacity: 1; }
+        
+        .btn-link { 
+            display: inline-block; padding: 8px 16px; background-color: #2563eb; 
+            color: white; text-decoration: none; border-radius: 6px; font-size: 14px; font-weight: 500; transition: 0.2s;
         }
-        h1 {
-            text-align: center;
-            color: var(--primary);
-            margin-bottom: 30px;
-        }
-        .controls {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        input, select {
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            flex: 1;
-            min-width: 200px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        th, td {
-            padding: 15px;
-            text-align: left;
-            border-bottom: 1px solid #eee;
-        }
-        th {
-            background-color: var(--primary);
-            color: white;
-        }
-        tr:hover {
-            background-color: #f1f4f8;
-        }
-        a.uptodate-btn {
-            display: inline-block;
-            padding: 6px 12px;
-            background-color: var(--secondary);
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-            font-size: 14px;
-            transition: background 0.3s;
-        }
-        a.uptodate-btn:hover {
-            background-color: #2980b9;
-        }
-        /* Tooltip styling */
-        .tooltip {
-            position: relative;
-            cursor: help;
-            border-bottom: 1px dashed #3498db;
-            color: #d35400;
-            font-weight: 500;
-        }
-        .tooltip:hover::after {
-            content: attr(data-ref);
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: #333;
-            color: #fff;
-            padding: 8px 12px;
-            border-radius: 4px;
-            font-size: 12px;
-            white-space: nowrap;
-            z-index: 10;
-            margin-bottom: 5px;
-        }
-        .tag {
-            font-size: 12px;
-            padding: 3px 8px;
-            border-radius: 12px;
-            background: #e0e0e0;
-            color: #333;
-        }
+        .btn-link:hover { background-color: #1d4ed8; }
+        .tag { font-size: 12px; padding: 4px 10px; border-radius: 20px; background: #e2e8f0; color: #475569; display: inline-block; margin-top: 4px; font-weight: 500; }
+        .no-adjust { color: #16a34a; }
     </style>
 </head>
 <body>
 
-    <h1>💊 Drug Reference: Max Dose & Renal Adjustment</h1>
-
+    <h2>💊 Renal Dose & Max Dose Finder</h2>
+    
     <div class="controls">
-        <input type="text" id="searchInput" placeholder="พิมพ์ชื่อยาเพื่อค้นหา (เช่น Metformin)...">
-        <select id="classFilter">
-            <option value="All">แสดงทั้งหมด (เรียงตามตัวอักษร)</option>
-            <option value="Antidiabetic">Antidiabetic (ยาเบาหวาน)</option>
-            <option value="Antihypertensive">Antihypertensive (ยาลดความดัน)</option>
-            <option value="Antianginal">Antianginal</option>
-            <option value="Diuretics">Diuretics (ยาขับปัสสาวะ)</option>
-            <option value="Digoxin">Digoxin</option>
-            <option value="Antibiotics">Antibiotics (ยาฆ่าเชื้อ)</option>
+        <input type="text" id="searchInput" placeholder="พิมพ์ชื่อยาเพื่อค้นหา... (เช่น amoxicillin)" onkeyup="filterTable()">
+        <select id="classFilter" onchange="filterTable()">
+            <option value="All">💊 แสดงทั้งหมด (เรียงตามอักษร)</option>
+            <option value="Beta-lactam">Beta-lactam</option>
+            <option value="Fluoroquinolone">Fluoroquinolone</option>
+            <option value="Macrolide">Macrolide</option>
+            <option value="Other Antibiotics">Other Antibiotics</option>
+            <option value="Gastrointestinal">Gastrointestinal</option>
+            <option value="Antihistamine">Antihistamine</option>
+            <option value="Analgesic/Antipyretic">Analgesic/Antipyretic</option>
+            <option value="Cardiovascular">Cardiovascular</option>
+            <option value="Diabetes">Diabetes</option>
+            <option value="Dyslipidemia">Dyslipidemia</option>
         </select>
     </div>
 
@@ -124,97 +59,174 @@
             <tr>
                 <th>Drug Name</th>
                 <th>Max Dose</th>
-                <th>ไตเริ่มมีปัญหาที่ (CrCl/eGFR) เล็งเพื่อดู Ref.</th>
+                <th>Renal Adjustment (Hover for Ref)</th>
                 <th>UpToDate Link</th>
             </tr>
         </thead>
         <tbody id="tableBody">
-            <!-- ข้อมูลจะถูก render ด้วย JavaScript -->
+            <!-- ข้อมูลจะถูก render ผ่าน JavaScript -->
         </tbody>
     </table>
 
-    <script>
-        // 1. จำลอง Database (สามารถเพิ่มยาลงใน Array นี้ได้เลย)
-        const drugDatabase = [
-            // --- Antidiabetic ---
-            { name: "Metformin", class: "Antidiabetic", maxDose: "2,550 mg/day", renal: "eGFR < 45 (เริ่มปรับ) / < 30 (Contraindicated)", ref: "ADA Standards of Care in Diabetes (2026) / FDA Label" },
-            { name: "Sitagliptin", class: "Antidiabetic", maxDose: "100 mg/day", renal: "eGFR < 45 (ลดเหลือ 50mg) / < 30 (ลดเหลือ 25mg)", ref: "FDA Approved Labeling" },
-            { name: "Empagliflozin", class: "Antidiabetic", maxDose: "25 mg/day", renal: "eGFR < 30 (ห้ามเริ่ม/หยุดใช้ ยกเว้น HFrEF หรือ CKD ตามไกด์ไลน์ใหม่)", ref: "FDA Approved Labeling / KDIGO" },
-            
-            // --- Cardio: Antihypertensive & Antianginal ---
-            { name: "Amlodipine", class: "Antihypertensive", maxDose: "10 mg/day", renal: "ไม่ต้องปรับขนาดยาตามค่าไต", ref: "AHA/ACC Hypertension Guidelines" },
-            { name: "Enalapril", class: "Antihypertensive", maxDose: "40 mg/day", renal: "CrCl < 30 (ลดขนาดเริ่มต้นเหลือ 2.5 mg/day)", ref: "FDA Approved Labeling" },
-            { name: "Losartan", class: "Antihypertensive", maxDose: "100 mg/day", renal: "ไม่ต้องปรับ (แต่เฝ้าระวัง K+ และ Cr เปลี่ยนแปลง)", ref: "FDA Approved Labeling" },
-            
-            // --- Cardio: Diuretics ---
-            { name: "Hydrochlorothiazide", class: "Diuretics", maxDose: "50 mg/day", renal: "CrCl < 30 (ยาไม่มีประสิทธิภาพ แนะนำ Loop diuretic)", ref: "FDA Approved Labeling" },
-            { name: "Furosemide", class: "Diuretics", maxDose: "600 mg/day (Severe CHF/Renal)", renal: "ไม่ต้องปรับ แต่ eGFR ต่ำอาจต้องใช้ Dose เริ่มต้นที่สูงขึ้น", ref: "AHA/ACC Heart Failure Guidelines" },
-            
-            // --- Cardio: Digoxin ---
-            { name: "Digoxin", class: "Digoxin", maxDose: "Maintenance 0.125 - 0.25 mg/day", renal: "CrCl < 50 (ลด Dose หรือยืด Interval)", ref: "FDA Approved Labeling / AHA HF Guidelines" },
+<script>
+    // 1. ฐานข้อมูลยา (ทำตาม List ที่กำหนด)
+    const drugData = [
+        // Beta-lactam
+        { name: "Amoxicillin", class: "Beta-lactam", maxDose: "4 g/day", renal: "CrCl < 30", ref: "UpToDate: Extend interval to q12h. Avoid 875 mg tablets." },
+        { name: "Amoxicillin/clavulanate", class: "Beta-lactam", maxDose: "Varies by formulation (e.g. 875/125 mg bid)", renal: "CrCl < 30", ref: "FDA Label: Do not use 875 mg or XR formulation if CrCl < 30." },
+        { name: "Cefepime", class: "Beta-lactam", maxDose: "6 g/day", renal: "CrCl ≤ 60", ref: "FDA Label: Decrease dose and/or increase interval based on CrCl." },
+        { name: "Cefotaxime", class: "Beta-lactam", maxDose: "12 g/day", renal: "CrCl < 20", ref: "FDA Label: Reduce dose by 50% if CrCl < 20." },
+        { name: "Ceftriaxone", class: "Beta-lactam", maxDose: "4 g/day", renal: "<span class='no-adjust'>No general adjustment</span>", ref: "FDA Label: Max 2 g/day only if severe combined renal and hepatic failure." },
+        { name: "Dicloxacillin", class: "Beta-lactam", maxDose: "4 g/day (6 g in severe)", renal: "<span class='no-adjust'>No adjustment</span>", ref: "UpToDate: No dosage adjustment necessary." },
+        { name: "Cloxacillin", class: "Beta-lactam", maxDose: "4 g/day", renal: "<span class='no-adjust'>No adjustment</span>", ref: "UpToDate: No dosage adjustment necessary." },
+        { name: "Cefalexin", class: "Beta-lactam", maxDose: "4 g/day", renal: "CrCl < 50", ref: "FDA Label: Reduce frequency based on CrCl." },
+        { name: "Cefdinir", class: "Beta-lactam", maxDose: "600 mg/day", renal: "CrCl < 30", ref: "FDA Label: 300 mg once daily if CrCl < 30." },
+        { name: "Meropenem", class: "Beta-lactam", maxDose: "6 g/day", renal: "CrCl ≤ 50", ref: "FDA Label: Decrease dose and extend interval." },
 
-            // --- Antibiotics ---
-            { name: "Amoxicillin", class: "Antibiotics", maxDose: "4 g/day (High-dose)", renal: "CrCl < 30 (ปรับ Interval เป็น q12h หรือ q24h)", ref: "Sanford Guide to Antimicrobial Therapy" },
-            { name: "Ciprofloxacin", class: "Antibiotics", maxDose: "PO: 1,500 mg/day | IV: 1,200 mg/day", renal: "CrCl < 50 (เริ่มปรับ Dose หรือ Interval)", ref: "Sanford Guide to Antimicrobial Therapy", uptodateOverride: "ciprofloxacin-systemic" },
-            { name: "Meropenem", class: "Antibiotics", maxDose: "6 g/day (Meningitis 2g q8h)", renal: "CrCl < 50 (ลด Dose และปรับ Interval)", ref: "Sanford Guide to Antimicrobial Therapy" },
-            { name: "Levofloxacin", class: "Antibiotics", maxDose: "750 mg/day", renal: "CrCl < 50 (ปรับ Loading และ Maintenance dose)", ref: "Sanford Guide to Antimicrobial Therapy", uptodateOverride: "levofloxacin-systemic" }
-        ];
+        // Fluoroquinolone
+        { name: "Ciprofloxacin", class: "Fluoroquinolone", maxDose: "1500 mg/day (PO)", renal: "CrCl < 50", ref: "FDA Label: 250-500 mg q18-24h if CrCl 30-50; q24h if CrCl < 30." },
+        { name: "Levofloxacin", class: "Fluoroquinolone", maxDose: "750 mg/day", renal: "CrCl < 50", ref: "FDA Label: Alter frequency or dose depending on indication." },
+        { name: "Norfloxacin", class: "Fluoroquinolone", maxDose: "800 mg/day", renal: "CrCl ≤ 30", ref: "FDA Label: 400 mg once daily if CrCl ≤ 30." },
+        { name: "Ofloxacin", class: "Fluoroquinolone", maxDose: "800 mg/day", renal: "CrCl ≤ 50", ref: "FDA Label: Prolong interval or reduce dose." },
+        { name: "Moxifloxacin", class: "Fluoroquinolone", maxDose: "400 mg/day", renal: "<span class='no-adjust'>No adjustment</span>", ref: "FDA Label: No dosage adjustment necessary." },
 
-        // 2. ฟังก์ชันสร้างลิงก์ UpToDate ตามที่คุยกันไว้ (รองรับ manual override บัคเช่น ciprofloxacin-systemic)
-        function getUptodateLink(drug) {
-            let pathName = drug.uptodateOverride 
-                ? drug.uptodateOverride 
-                : drug.name.toLowerCase().trim().replace(/\s+/g, '-');
-            return `https://www.uptodate.com/contents/${pathName}-drug-information?sectionName=Kidney%20Impairment%20(Adult)`;
+        // Macrolide
+        { name: "Azithromycin", class: "Macrolide", maxDose: "500 mg/day (usually)", renal: "Use caution in severe impairment", ref: "FDA Label: Caution if GFR < 10 mL/min." },
+        { name: "Clarithromycin", class: "Macrolide", maxDose: "1000 mg/day", renal: "CrCl < 30", ref: "FDA Label: Reduce dose by 50% or double the interval." },
+        { name: "Roxithromycin", class: "Macrolide", maxDose: "300 mg/day", renal: "Severe impairment", ref: "Product Info: Modify dose in severe renal impairment (e.g. 150 mg/day)." },
+
+        // Other Antibiotics
+        { name: "Doxycycline", class: "Other Antibiotics", maxDose: "200 mg/day (PO)", renal: "<span class='no-adjust'>No adjustment</span>", ref: "FDA Label: Does not accumulate in renal failure." },
+        { name: "Clindamycin", class: "Other Antibiotics", maxDose: "1.8 g/day (PO) / 4.8 g (IV)", renal: "<span class='no-adjust'>No adjustment</span>", ref: "FDA Label: No dosage adjustment necessary." },
+        { name: "Cotrimoxazole", class: "Other Antibiotics", maxDose: "Based on TMP component", renal: "CrCl < 30", ref: "FDA Label: Reduce dose 50% if CrCl 15-30. Contraindicated if CrCl < 15." },
+        { name: "Nitrofurantoin", class: "Other Antibiotics", maxDose: "400 mg/day", renal: "Contraindicated CrCl < 60 (or < 30 in some guidelines)", ref: "FDA Label: Avoid if CrCl < 60. Beers Criteria allows if CrCl ≥ 30 for short term." },
+        { name: "Metronidazole", class: "Other Antibiotics", maxDose: "4 g/day", renal: "CrCl < 10", ref: "UpToDate: Administer 50% of dose if CrCl < 10." },
+
+        // Gastrointestinal
+        { name: "Domperidone", class: "Gastrointestinal", maxDose: "30 mg/day", renal: "Severe impairment", ref: "EMA: Extend dosing frequency in severe renal impairment." },
+        { name: "Metoclopramide", class: "Gastrointestinal", maxDose: "40 mg/day", renal: "CrCl < 60", ref: "FDA Label: Reduce dose by 50%." },
+        { name: "Famotidine", class: "Gastrointestinal", maxDose: "40 mg/day (up to 80mg in ZES)", renal: "CrCl < 50", ref: "FDA Label: 20 mg at bedtime or increase interval to 36-48h." },
+        { name: "Omeprazole", class: "Gastrointestinal", maxDose: "120 mg/day (in ZES)", renal: "<span class='no-adjust'>No adjustment</span>", ref: "FDA Label: No dosage adjustment necessary." },
+        { name: "Pantoprazole", class: "Gastrointestinal", maxDose: "240 mg/day (in ZES)", renal: "<span class='no-adjust'>No adjustment</span>", ref: "FDA Label: No dosage adjustment necessary." },
+        { name: "Esomeprazole", class: "Gastrointestinal", maxDose: "240 mg/day (in ZES)", renal: "<span class='no-adjust'>No adjustment</span>", ref: "FDA Label: No dosage adjustment necessary." },
+        { name: "Lansoprazole", class: "Gastrointestinal", maxDose: "180 mg/day (in ZES)", renal: "<span class='no-adjust'>No adjustment</span>", ref: "FDA Label: No dosage adjustment necessary." },
+        { name: "Ondansetron", class: "Gastrointestinal", maxDose: "24 mg/day", renal: "<span class='no-adjust'>No adjustment</span>", ref: "FDA Label: No dosage adjustment necessary." },
+        { name: "Loperamide", class: "Gastrointestinal", maxDose: "16 mg/day", renal: "<span class='no-adjust'>No adjustment</span>", ref: "FDA Label: No dosage adjustment necessary." },
+        { name: "Hyoscine", class: "Gastrointestinal", maxDose: "80 mg/day", renal: "Use with caution", ref: "Product Info: Excreted renally; use with caution." },
+        { name: "Simethicone", class: "Gastrointestinal", maxDose: "500 mg/day", renal: "<span class='no-adjust'>No adjustment</span>", ref: "FDA Label: Not absorbed systemically." },
+        { name: "Racecadotril", class: "Gastrointestinal", maxDose: "300 mg/day", renal: "Caution", ref: "Product Info: Limited data; administer with caution in renal impairment." },
+        { name: "Alum Milk", class: "Gastrointestinal", maxDose: "Varies", renal: "Avoid in severe impairment", ref: "FDA Label: Risk of magnesium/aluminum toxicity in severe renal impairment." },
+        { name: "Senna", class: "Gastrointestinal", maxDose: "34.2 mg sennosides/day", renal: "<span class='no-adjust'>No adjustment</span>", ref: "UpToDate: No dosage adjustment necessary." },
+        { name: "Bisacodyl", class: "Gastrointestinal", maxDose: "15 mg/day", renal: "<span class='no-adjust'>No adjustment</span>", ref: "UpToDate: No dosage adjustment necessary." },
+
+        // Antihistamine
+        { name: "Cetirizine", class: "Antihistamine", maxDose: "10 mg/day", renal: "CrCl < 50", ref: "FDA Label: 5 mg once daily." },
+        { name: "Fexofenadine", class: "Antihistamine", maxDose: "180 mg/day", renal: "CrCl < 80", ref: "FDA Label: Start with 60 mg once daily." },
+
+        // Analgesic/Antipyretic
+        { name: "Ibuprofen", class: "Analgesic/Antipyretic", maxDose: "3200 mg/day", renal: "Avoid if CrCl < 30", ref: "FDA Label: Avoid in advanced renal disease." },
+        { name: "Paracetamol", class: "Analgesic/Antipyretic", maxDose: "4000 mg/day", renal: "CrCl < 10", ref: "UpToDate: Increase dosing interval to q8h if CrCl < 10." },
+
+        // Cardiovascular
+        { name: "Rivaroxaban", class: "Cardiovascular", maxDose: "20 mg/day", renal: "CrCl < 50", ref: "FDA Label: Varies by indication. Afib: 15 mg if CrCl 15-50. Avoid if < 15." },
+        { name: "Dabigatran", class: "Cardiovascular", maxDose: "300 mg/day", renal: "CrCl < 50", ref: "FDA Label: Varies by indication. Afib: 75 mg bid if CrCl 15-30." },
+        { name: "Spironolactone", class: "Cardiovascular", maxDose: "400 mg/day", renal: "eGFR < 50", ref: "FDA Label: Adjust dose or interval. Avoid if eGFR < 30 in HF." },
+        { name: "Atenolol", class: "Cardiovascular", maxDose: "100 mg/day", renal: "CrCl < 35", ref: "FDA Label: Max 50 mg if CrCl 15-35; Max 25 mg if CrCl < 15." },
+        { name: "Digoxin", class: "Cardiovascular", maxDose: "0.25 mg/day (Maintenance)", renal: "CrCl < 50", ref: "UpToDate: Decrease dose and/or increase interval based on CrCl." },
+        { name: "Hydrochlorothiazide", class: "Cardiovascular", maxDose: "50 mg/day", renal: "CrCl < 30", ref: "FDA Label: Ineffective and generally avoid if CrCl < 30." },
+        { name: "Amlodipine", class: "Cardiovascular", maxDose: "10 mg/day", renal: "<span class='no-adjust'>No adjustment</span>", ref: "FDA Label: No dosage adjustment necessary." },
+        { name: "Losartan", class: "Cardiovascular", maxDose: "100 mg/day", renal: "<span class='no-adjust'>No adjustment</span>", ref: "FDA Label: No initial adjustment needed, but caution in volume depletion." },
+
+        // Diabetes
+        { name: "Metformin", class: "Diabetes", maxDose: "2550 mg/day", renal: "eGFR < 45", ref: "FDA Label: Do not initiate if eGFR 30-45. Contraindicated if eGFR < 30." },
+        { name: "Glipizide", class: "Diabetes", maxDose: "40 mg/day", renal: "CrCl < 50", ref: "FDA Label: Initial 2.5 mg; titrate carefully." },
+        { name: "Glimepiride", class: "Diabetes", maxDose: "8 mg/day", renal: "CrCl < 22", ref: "FDA Label: Initial 1 mg; titrate carefully." },
+        { name: "Pioglitazone", class: "Diabetes", maxDose: "45 mg/day", renal: "<span class='no-adjust'>No adjustment</span>", ref: "FDA Label: No dosage adjustment necessary." },
+        { name: "Dapagliflozin", class: "Diabetes", maxDose: "10 mg/day", renal: "eGFR < 45 (for glycemic control)", ref: "FDA Label: Not recommended for glycemic control if eGFR < 45. Used for CKD/HF up to eGFR 25." },
+        { name: "Empagliflozin", class: "Diabetes", maxDose: "25 mg/day", renal: "eGFR < 30 (for glycemic control)", ref: "FDA Label: Contraindicated for glycemic control if eGFR < 30." },
+        { name: "Canagliflozin", class: "Diabetes", maxDose: "300 mg/day", renal: "eGFR < 60", ref: "FDA Label: Max 100 mg if eGFR < 60. Specific limits if < 30." },
+        { name: "Linagliptin", class: "Diabetes", maxDose: "5 mg/day", renal: "<span class='no-adjust'>No adjustment</span>", ref: "FDA Label: No dosage adjustment necessary." },
+        { name: "Sitagliptin", class: "Diabetes", maxDose: "100 mg/day", renal: "eGFR < 45", ref: "FDA Label: 50 mg if eGFR 30-44; 25 mg if eGFR < 30." },
+        { name: "Vildagliptin", class: "Diabetes", maxDose: "100 mg/day", renal: "CrCl < 50", ref: "EMA Label: 50 mg once daily if CrCl < 50." },
+        { name: "Saxagliptin", class: "Diabetes", maxDose: "5 mg/day", renal: "eGFR < 45", ref: "FDA Label: 2.5 mg once daily if eGFR < 45." },
+        { name: "Alogliptin", class: "Diabetes", maxDose: "25 mg/day", renal: "CrCl < 60", ref: "FDA Label: 12.5 mg if CrCl 30-59; 6.25 mg if CrCl < 30." },
+
+        // Dyslipidemia
+        { name: "Rosuvastatin", class: "Dyslipidemia", maxDose: "40 mg/day", renal: "CrCl < 30", ref: "FDA Label: Start 5 mg, max 10 mg/day if CrCl < 30." },
+        { name: "Atorvastatin", class: "Dyslipidemia", maxDose: "80 mg/day", renal: "<span class='no-adjust'>No adjustment</span>", ref: "FDA Label: No dosage adjustment necessary." },
+        { name: "Simvastatin", class: "Dyslipidemia", maxDose: "40 mg/day (80mg restricted)", renal: "CrCl < 30", ref: "FDA Label: Start 5 mg/day if CrCl < 30." },
+        { name: "Fenofibrate", class: "Dyslipidemia", maxDose: "Varies by salt (e.g. 145/160 mg)", renal: "Mild-Mod impairment", ref: "FDA Label: Reduce dose. Contraindicated if severe impairment (CrCl < 30)." },
+        { name: "Ezetimibe", class: "Dyslipidemia", maxDose: "10 mg/day", renal: "<span class='no-adjust'>No adjustment</span>", ref: "FDA Label: No dosage adjustment necessary." }
+    ];
+
+    // 2. ฟังก์ชันสร้างลิ้งก์ UpToDate
+    function getUpToDateLink(drugName) {
+        let formattedName = drugName.toLowerCase().trim().replace(/\s+/g, '-');
+        
+        // Manual Override สำหรับยาสูตรผสม และข้อยกเว้นบางตัว
+        switch(formattedName) {
+            case "amoxicillin/clavulanate":
+                formattedName = "amoxicillin-and-clavulanate";
+                break;
+            case "cotrimoxazole":
+                formattedName = "trimethoprim-and-sulfamethoxazole-cotrimoxazole"; 
+                break;
+            case "alum-milk":
+                formattedName = "aluminum-hydroxide-and-magnesium-hydroxide";
+                break;
+            case "ciprofloxacin":
+                formattedName = "ciprofloxacin-systemic"; // เติม systemic เพื่อกัน error
+                break;
         }
 
-        // 3. ฟังก์ชัน Render ตาราง
-        function renderTable(data) {
-            const tbody = document.getElementById('tableBody');
-            tbody.innerHTML = ''; // ล้างค่าเก่า
+        return `https://www.uptodate.com/contents/${formattedName}-drug-information?sectionName=Kidney%20Impairment%20(Adult)`;
+    }
 
-            // จัดเรียงตามตัวอักษรเสมอ (Show all เรียง A-Z)
-            const sortedData = [...data].sort((a, b) => a.name.localeCompare(b.name));
+    // 3. ฟังก์ชันแสดงผลตาราง
+    function renderTable(data) {
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+        
+        data.forEach(drug => {
+            const row = `<tr>
+                <td><strong>${drug.name}</strong> <br><span class="tag">${drug.class}</span></td>
+                <td>${drug.maxDose}</td>
+                <td>
+                    <span class="tooltip">${drug.renal}
+                        <span class="tooltiptext">📚 <strong>Reference:</strong><br>${drug.ref}</span>
+                    </span>
+                </td>
+                <td><a href="${getUpToDateLink(drug.name)}" target="_blank" class="btn-link">🔗 ไปที่ UpToDate</a></td>
+            </tr>`;
+            tbody.innerHTML += row;
+        });
+    }
 
-            sortedData.forEach(drug => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>
-                        <strong>${drug.name}</strong><br>
-                        <span class="tag">${drug.class}</span>
-                    </td>
-                    <td>${drug.maxDose}</td>
-                    <td>
-                        <span class="tooltip" data-ref="Ref: ${drug.ref}">${drug.renal}</span>
-                    </td>
-                    <td>
-                        <a href="${getUptodateLink(drug)}" class="uptodate-btn" target="_blank">🔗 Uptodate (Max Dose)</a>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
+    // 4. ฟังก์ชันค้นหาและกรองข้อมูล
+    function filterTable() {
+        const searchText = document.getElementById('searchInput').value.toLowerCase();
+        const selectedClass = document.getElementById('classFilter').value;
+
+        let filteredData = drugData.filter(drug => {
+            const matchName = drug.name.toLowerCase().includes(searchText);
+            const matchClass = selectedClass === "All" || drug.class === selectedClass;
+            return matchName && matchClass;
+        });
+
+        if(selectedClass === "All") {
+            filteredData.sort((a, b) => a.name.localeCompare(b.name));
         }
 
-        // 4. ฟังก์ชัน Filter ค้นหาและหมวดหมู่
-        function filterData() {
-            const searchText = document.getElementById('searchInput').value.toLowerCase();
-            const classVal = document.getElementById('classFilter').value;
+        renderTable(filteredData);
+    }
 
-            const filtered = drugDatabase.filter(drug => {
-                const matchName = drug.name.toLowerCase().includes(searchText);
-                const matchClass = classVal === 'All' || drug.class === classVal;
-                return matchName && matchClass;
-            });
+    // โหลดตารางครั้งแรกเรียง A-Z
+    window.onload = () => {
+        drugData.sort((a, b) => a.name.localeCompare(b.name));
+        renderTable(drugData);
+    };
 
-            renderTable(filtered);
-        }
+</script>
 
-        // 5. ดักจับ Event เมื่อพิมพ์หรือเปลี่ยน Dropdown
-        document.getElementById('searchInput').addEventListener('input', filterData);
-        document.getElementById('classFilter').addEventListener('change', filterData);
-
-        // Render ครั้งแรกตอนเปิดเว็บ
-        renderTable(drugDatabase);
-    </script>
 </body>
 </html>
