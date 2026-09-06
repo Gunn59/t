@@ -80,25 +80,29 @@
 
                     if (response.ok) {
                         const data = await response.json();
-                        console.log(`ข้อมูลที่ได้ของ ${name}:`, JSON.stringify(data));
-
-                        // ตรวจสอบว่ามีข้อมูลส่งกลับมาหรือไม่
-                        if (data && data.length > 0) {
-                            // *จุดสำคัญ: ตรวจสอบใน F12 (Console) อีกครั้งว่า key ที่เก็บรหัส ID ชื่อว่าอะไร
-                            // ส่วนใหญ่มักใช้ data[0].id, data[0].drug_id หรือ data[0].item_id
-                            const fetchedId = data[0].id || data[0].item_id; 
+                        
+                        // เข้าถึงโครงสร้าง JSON ที่ซ้อนอยู่: categories -> results
+                        if (data.categories && data.categories.length > 0 && data.categories[0].results.length > 0) {
+                            
+                            // ดึงข้อมูลยาตัวแรกสุดที่ตรงกับคำค้นหา
+                            const firstResult = data.categories[0].results[0];
+                            
+                            // ประกอบรหัส ID (ddc_id - brand_name_id) เช่น 1573-0
+                            const ddcId = firstResult.ddc_id;
+                            const brandId = firstResult.brand_name_id || 0;
+                            const fetchedId = `${ddcId}-${brandId}`; 
                             
                             if (fetchedId) {
                                 drugIds.push(fetchedId);
+                                console.log(`สำเร็จ: ${name} = ${fetchedId}`);
                             }
                         } else {
-                            console.warn(`ไม่พบข้อมูล ID ของยา: ${name}`);
+                            console.warn(`ไม่พบข้อมูล ID ของยา: ${name} ในฐานข้อมูล Drugs.com`);
                         }
                     }
                 } catch (error) {
-                    console.error(`Error fetching ID for ${name} (อาจติดปัญหา CORS):`, error);
+                    console.error(`Error fetching ID for ${name}:`, error);
                 }
-            }
 
             // 3. ประกอบร่าง URL และเปิดแท็บใหม่
             if (drugIds.length >= 2) {
