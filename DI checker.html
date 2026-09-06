@@ -3,65 +3,288 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dynamic DDI Checker</title>
+    <title>DDI Checker - Pro Edition</title>
     <style>
-        body { font-family: sans-serif; margin: 20px; }
-        .input-group { margin-bottom: 10px; }
-        input { padding: 8px; width: 250px; font-size: 16px; }
-        .btn { padding: 8px 15px; font-size: 16px; cursor: pointer; margin-top: 10px; }
-        .btn-submit { background-color: #007bff; color: white; border: none; border-radius: 4px; }
-        .btn-add { background-color: #e0e0e0; border: 1px solid #ccc; border-radius: 4px; }
+        /* ============ THEME & STYLES ============ */
+        :root {
+            --primary: #0ea5e9;
+            --primary-hover: #0284c7;
+            --bg-color: #f0f9ff;
+            --card-bg: #ffffff;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --error: #ef4444;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .header h2 {
+            margin: 0;
+            color: var(--primary);
+            font-size: 24px;
+        }
+
+        .header p {
+            margin: 5px 0 0;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .drug-input {
+            width: 100%;
+            padding: 12px 15px;
+            font-size: 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+            background-color: #f8fafc;
+        }
+
+        .drug-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2);
+            background-color: #fff;
+        }
+
+        .btn-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-add {
+            background-color: #f1f5f9;
+            color: var(--text-dark);
+            border: 1px solid var(--border);
+        }
+
+        .btn-add:hover:not(:disabled) {
+            background-color: #e2e8f0;
+        }
+
+        .btn-add:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-submit {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-submit:hover {
+            background-color: var(--primary-hover);
+        }
+        
+        .loading {
+            opacity: 0.7;
+            cursor: wait;
+        }
     </style>
 </head>
 <body>
 
-    <h2>ระบบตรวจสอบปฏิกิริยาระหว่างยา (Drugs.com)</h2>
-    
-    <div id="drug-container">
-        <div class="input-group">
-            <input type="text" class="drug-input" placeholder="ชื่อยาตัวที่ 1 (เช่น metformin)">
+    <div class="container">
+        <div class="header">
+            <h2>ตรวจสอบปฏิกิริยาระหว่างยา</h2>
+            <p>Freemium Version (จำกัดสูงสุด 3 รายการ)</p>
         </div>
-        <div class="input-group">
-            <input type="text" class="drug-input" placeholder="ชื่อยาตัวที่ 2 (เช่น simvastatin)">
+
+        <!-- ฐานข้อมูลตัวเลือกยา -->
+        <datalist id="drug-list"></datalist>
+
+        <div id="drug-container">
+            <div class="input-group">
+                <label>ยาตัวที่ 1</label>
+                <input type="text" class="drug-input" list="drug-list" placeholder="พิมพ์ชื่อยาเพื่อค้นหา..." autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label>ยาตัวที่ 2</label>
+                <input type="text" class="drug-input" list="drug-list" placeholder="พิมพ์ชื่อยาเพื่อค้นหา..." autocomplete="off">
+            </div>
+        </div>
+
+        <div class="btn-container">
+            <button class="btn btn-add" id="addBtn" onclick="addDrugInput()">+ เพิ่มยา</button>
+            <button class="btn btn-submit" id="submitBtn" onclick="processInteractions()">ตรวจสอบ (Check)</button>
         </div>
     </div>
 
-    <button class="btn btn-add" onclick="addDrugInput()">+ เพิ่มยา</button>
-    <br><br>
-
-    <button class="btn btn-submit" onclick="processInteractions()">ตรวจสอบปฏิกิริยา</button>
-
     <script>
+        // ============ ฐานข้อมูลยาจากไฟล์ gemini-code-1788692325223.js ============
+        const drugData = [
+            // CARDIOVASCULAR
+            { name: "Enalapril", class: "ACE Inhibitor", category: "cv", subset: ["acei"] },
+            { name: "Captopril", class: "ACE Inhibitor", category: "cv", subset: ["acei"] },
+            { name: "Benazepril", class: "ACE Inhibitor", category: "cv", subset: ["acei"] },
+            { name: "Fosinopril", class: "ACE Inhibitor", category: "cv", subset: ["acei"] },
+            { name: "Imidapril", class: "ACE Inhibitor", category: "cv", subset: ["acei"] },
+            { name: "Lisinopril", class: "ACE Inhibitor", category: "cv", subset: ["acei"] },
+            { name: "Moexipril", class: "ACE Inhibitor", category: "cv", subset: ["acei"] },
+            { name: "Perindopril", class: "ACE Inhibitor", category: "cv", subset: ["acei"] },
+            { name: "Quinapril", class: "ACE Inhibitor", category: "cv", subset: ["acei"] },
+            { name: "Ramipril", class: "ACE Inhibitor", category: "cv", subset: ["acei"] },
+            { name: "Trandolapril", class: "ACE Inhibitor", category: "cv", subset: ["acei"] },
+            { name: "Losartan", class: "ARB", category: "cv", subset: ["arb"] },
+            { name: "Valsartan", class: "ARB", category: "cv", subset: ["arb"] },
+            { name: "Amlodipine", class: "CCB", category: "cv", subset: ["ccb"] },
+            { name: "Atenolol", class: "Beta-blocker", category: "cv", subset: ["betablocker"] },
+            { name: "HCTZ", class: "Thiazide Diuretic", category: "cv", subset: ["diuretic"] },
+            { name: "Aspirin", class: "Antiplatelet", category: "cv", subset: ["antiplatelet"] },
+            { name: "Warfarin", class: "Anticoagulant", category: "cv", subset: ["anticoagulant"] },
+            { name: "Atorvastatin", class: "Statin", category: "cv", subset: ["dyslipidemia"] },
+            { name: "Simvastatin", class: "Statin", category: "cv", subset: ["dyslipidemia"] },
+            // ENDOCRINE
+            { name: "Metformin", class: "Biguanide", category: "endo", subset: ["diabetes"] },
+            { name: "Glipizide", class: "Sulfonylurea", category: "endo", subset: ["diabetes"] },
+            { name: "Pioglitazone", class: "Thiazolidinedione", category: "endo", subset: ["diabetes"] },
+            { name: "Levothyroxine", class: "Thyroid Hormone", category: "endo", subset: ["thyroid"] },
+            // ANTI-INFECTIVES
+            { name: "Amoxicillin", class: "Penicillin", category: "abx", subset: ["opd"] },
+            { name: "Ceftriaxone", class: "Cephalosporin (3rd Gen)", category: "abx", subset: ["ipd"] },
+            { name: "Fluconazole", class: "Antifungal", category: "abx", subset: ["antifungal"] },
+            // ANALGESIC & PAIN
+            { name: "Ibuprofen", class: "NSAID", category: "painneuro", subset: ["nsaid"] },
+            { name: "Paracetamol", class: "Analgesic", category: "painneuro", subset: ["all"] },
+            { name: "Tramadol", class: "Opioid", category: "painneuro", subset: ["opioid"] },
+            // CNS & PSYCHIATRIC
+            { name: "Diazepam", class: "Benzodiazepine", category: "cnspsych", subset: ["psych"] },
+            { name: "Fluoxetine", class: "SSRI", category: "cnspsych", subset: ["psych"] },
+            // GASTROINTESTINAL
+            { name: "Omeprazole", class: "Proton Pump Inhibitor", category: "gi", subset: ["acidsuppress"] },
+            { name: "Domperidone", class: "Antiemetic/Prokinetic", category: "gi", subset: ["antiemetic"] },
+            // RESPIRATORY
+            { name: "Salbutamol", class: "SABA", category: "resp", subset: ["bronchodilator"] },
+            { name: "Cetirizine", class: "Antihistamine", category: "resp", subset: ["antihistamine"] }
+        ];
+
+        // 1. นำข้อมูลยามาใส่ใน Datalist เพื่อทำช่องค้นหา
+        const dataList = document.getElementById('drug-list');
+        // สร้างอาเรย์เก็บเฉพาะชื่อยาเพื่อให้ตรวจสอบตอน Submit ได้ง่าย
+        const validDrugNames = drugData.map(d => d.name.toLowerCase()); 
+        
+        drugData.forEach(drug => {
+            const option = document.createElement('option');
+            option.value = drug.name; // ดึงชื่อยาจากฐานข้อมูลมาแสดง
+            dataList.appendChild(option);
+        });
+
+        // 2. ระบบจำกัดช่องกรอกสูงสุด 3 ช่อง
+        const MAX_DRUGS = 3;
+        
         function addDrugInput() {
             const container = document.getElementById('drug-container');
-            const inputCount = container.children.length + 1;
+            const inputCount = container.children.length;
+            
+            if (inputCount >= MAX_DRUGS) return;
             
             const div = document.createElement('div');
             div.className = 'input-group';
             
+            const label = document.createElement('label');
+            label.innerText = `ยาตัวที่ ${inputCount + 1}`;
+            
             const input = document.createElement('input');
             input.type = 'text';
             input.className = 'drug-input';
-            input.placeholder = `ชื่อยาตัวที่ ${inputCount}`;
+            input.setAttribute('list', 'drug-list');
+            input.placeholder = 'พิมพ์ชื่อยาเพื่อค้นหา...';
+            input.autocomplete = 'off';
             
+            div.appendChild(label);
             div.appendChild(input);
             container.appendChild(div);
+            
+            // ปิดปุ่มเมื่อครบ 3 ช่อง
+            if (container.children.length >= MAX_DRUGS) {
+                const addBtn = document.getElementById('addBtn');
+                addBtn.disabled = true;
+                addBtn.innerText = 'เต็มโควต้าแล้ว';
+            }
         }
 
+        // 3. ระบบส่งข้อมูลไปยัง API
         async function processInteractions() {
             const inputs = document.querySelectorAll('.drug-input');
+            const submitBtn = document.getElementById('submitBtn');
+            
             const drugNames = Array.from(inputs)
                                    .map(el => el.value.trim())
                                    .filter(val => val !== "");
 
+            // ตรวจสอบว่ากรอกอย่างน้อย 2 ตัว
             if (drugNames.length < 2) {
-                alert("กรุณากรอกชื่อยาอย่างน้อย 2 ตัว");
+                alert("กรุณาเลือกยาอย่างน้อย 2 ตัว");
                 return;
             }
 
+            // ตรวจสอบว่ายาที่พิมพ์มา อยู่ในฐานข้อมูลที่ให้มาหรือไม่
+            const allValid = drugNames.every(name => validDrugNames.includes(name.toLowerCase()));
+            if (!allValid) {
+                alert("กรุณาเลือกชื่อยาจากรายการที่กำหนดให้เท่านั้น");
+                return;
+            }
+
+            // เปลี่ยนสถานะปุ่มตอนกำลังโหลด
+            submitBtn.innerText = "กำลังประมวลผล...";
+            submitBtn.classList.add("loading");
+
             let drugIds = [];
 
-            // วนลูปยิง API ดึง ID
             for (let name of drugNames) {
                 const apiUrl = `https://www.drugs.com/api/autocomplete/?type=interaction&s=${encodeURIComponent(name)}`;
                 
@@ -74,20 +297,10 @@
                     if (response.ok) {
                         const data = await response.json();
                         
-                        // เข้าถึงโครงสร้าง JSON ที่ซ้อนอยู่: categories -> results
                         if (data.categories && data.categories.length > 0 && data.categories[0].results.length > 0) {
-                            
                             const firstResult = data.categories[0].results[0];
-                            const ddcId = firstResult.ddc_id;
-                            const brandId = firstResult.brand_name_id || 0;
-                            const fetchedId = `${ddcId}-${brandId}`; 
-                            
-                            if (fetchedId) {
-                                drugIds.push(fetchedId);
-                                console.log(`สำเร็จ: ${name} = ${fetchedId}`);
-                            }
-                        } else {
-                            console.warn(`ไม่พบข้อมูล ID ของยา: ${name} ในฐานข้อมูล`);
+                            const fetchedId = `${firstResult.ddc_id}-${firstResult.brand_name_id || 0}`; 
+                            drugIds.push(fetchedId);
                         }
                     }
                 } catch (error) {
@@ -95,14 +308,15 @@
                 }
             }
 
-            // ประกอบร่าง URL และเปิดแท็บใหม่
+            submitBtn.innerText = "ตรวจสอบ (Check)";
+            submitBtn.classList.remove("loading");
+
             if (drugIds.length >= 2) {
                 const idString = drugIds.join(',');
                 const targetUrl = `https://www.drugs.com/interaction/list/?drug_list=${idString}`;
-                
                 window.open(targetUrl, '_blank');
             } else {
-                alert("ดึงรหัสยาไม่ครบ โปรดตรวจสอบชื่อยาที่สะกดผิด หรือดู Error ใน Console");
+                alert("ไม่สามารถดึงข้อมูลรหัสยาได้ครบถ้วน");
             }
         }
     </script>
