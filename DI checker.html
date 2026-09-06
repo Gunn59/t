@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic DDI Checker</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        .input-group { margin-bottom: 10px; }
+        input { padding: 8px; width: 250px; font-size: 16px; }
+        .btn { padding: 8px 15px; font-size: 16px; cursor: pointer; margin-top: 10px; }
+        .btn-submit { background-color: #007bff; color: white; border: none; border-radius: 4px; }
+        .btn-add { background-color: #e0e0e0; border: 1px solid #ccc; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+    <h2>ระบบตรวจสอบปฏิกิริยาระหว่างยา (เชื่อมต่อ Drugs.com)</h2>
+    
+    <!-- คอนเทนเนอร์สำหรับเก็บช่องกรอกยา -->
+    <div id="drug-container">
+        <div class="input-group">
+            <input type="text" class="drug-input" placeholder="ชื่อยาตัวที่ 1 (เช่น calcitriol)">
+        </div>
+        <div class="input-group">
+            <input type="text" class="drug-input" placeholder="ชื่อยาตัวที่ 2 (เช่น calcium)">
+        </div>
+    </div>
+
+    <!-- ปุ่มเพิ่มช่องกรอกยา -->
+    <button class="btn btn-add" onclick="addDrugInput()">+ เพิ่มยา</button>
+    <br><br>
+
+    <!-- ปุ่มประมวลผล -->
+    <button class="btn btn-submit" onclick="processInteractions()">ตรวจสอบปฏิกิริยา</button>
+
+    <script>
+        // ฟังก์ชันสำหรับเพิ่มช่องกรอกยา (Dynamic Input)
+        function addDrugInput() {
+            const container = document.getElementById('drug-container');
+            const inputCount = container.children.length + 1;
+            
+            const div = document.createElement('div');
+            div.className = 'input-group';
+            
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'drug-input';
+            input.placeholder = `ชื่อยาตัวที่ ${inputCount}`;
+            
+            div.appendChild(input);
+            container.appendChild(div);
+        }
+
+        // ฟังก์ชันดึง ID จากแต่ละชื่อยา และเปิดหน้าเว็บเป้าหมาย
+        async function processInteractions() {
+            // 1. กวาดข้อมูลจากทุกช่องที่มีคลาส .drug-input และกรองช่องที่ว่างทิ้ง
+            const inputs = document.querySelectorAll('.drug-input');
+            const drugNames = Array.from(inputs)
+                                   .map(el => el.value.trim())
+                                   .filter(val => val !== "");
+
+            if (drugNames.length < 2) {
+                alert("กรุณากรอกชื่อยาอย่างน้อย 2 ตัว");
+                return;
+            }
+
+            let drugIds = [];
+
+            // 2. วนลูปยิง API เพื่อดึง ID ของยาทีละตัว
+            for (let name of drugNames) {
+                // เข้ารหัสตัวอักษรเผื่อมีการเว้นวรรค
+                const apiUrl = `https://www.drugs.com/api/autocomplete/?type=interaction&s=${encodeURIComponent(name)}`;
+                
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: "GET",
+                        headers: { "accept": "application/json" }
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        
+                        // ตรวจสอบว่ามีข้อมูลส่งกลับมาหรือไม่
+                        if (data && data.length > 0) {
+                            // *จุดสำคัญ: ตรวจสอบใน F12 (Console) อีกครั้งว่า key ที่เก็บรหัส ID ชื่อว่าอะไร
+                            // ส่วนใหญ่มักใช้ data[0].id, data[0].drug_id หรือ data[0].item_id
+                            const fetchedId = data[0].id || data[0].item_id; 
+                            
+                            if (fetchedId) {
+                                drugIds.push(fetchedId);
+                            }
+                        } else {
+                            console.warn(`ไม่พบข้อมูล ID ของยา: ${name}`);
+                        }
+                    }
+                } catch (error) {
+                    console.error(`Error fetching ID for ${name} (อาจติดปัญหา CORS):`, error);
+                }
+            }
+
+            // 3. ประกอบร่าง URL และเปิดแท็บใหม่
+            if (drugIds.length >= 2) {
+                // นำ ID มาต่อกันด้วยลูกน้ำ (เช่น 2067-0,276-0) ตามรูปแบบ URL ของ Drugs.com
+                const idString = drugIds.join(',');
+                const targetUrl = `https://www.drugs.com/interaction/list/?drug_list=${idString}`;
+                
+                // เปิดหน้าเว็บใหม่
+                window.open(targetUrl, '_blank');
+            } else {
+                alert("ไม่สามารถดึงข้อมูล ID ของยาได้ครบถ้วน (โปรดดู Error ใน Console)");
+            }
+        }
+    </script>
+</body>
+</html>
