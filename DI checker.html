@@ -15,27 +15,23 @@
 </head>
 <body>
 
-    <h2>ระบบตรวจสอบปฏิกิริยาระหว่างยา (เชื่อมต่อ Drugs.com)</h2>
+    <h2>ระบบตรวจสอบปฏิกิริยาระหว่างยา (Drugs.com)</h2>
     
-    <!-- คอนเทนเนอร์สำหรับเก็บช่องกรอกยา -->
     <div id="drug-container">
         <div class="input-group">
-            <input type="text" class="drug-input" placeholder="ชื่อยาตัวที่ 1 (เช่น calcitriol)">
+            <input type="text" class="drug-input" placeholder="ชื่อยาตัวที่ 1 (เช่น metformin)">
         </div>
         <div class="input-group">
-            <input type="text" class="drug-input" placeholder="ชื่อยาตัวที่ 2 (เช่น calcium)">
+            <input type="text" class="drug-input" placeholder="ชื่อยาตัวที่ 2 (เช่น simvastatin)">
         </div>
     </div>
 
-    <!-- ปุ่มเพิ่มช่องกรอกยา -->
     <button class="btn btn-add" onclick="addDrugInput()">+ เพิ่มยา</button>
     <br><br>
 
-    <!-- ปุ่มประมวลผล -->
     <button class="btn btn-submit" onclick="processInteractions()">ตรวจสอบปฏิกิริยา</button>
 
     <script>
-        // ฟังก์ชันสำหรับเพิ่มช่องกรอกยา (Dynamic Input)
         function addDrugInput() {
             const container = document.getElementById('drug-container');
             const inputCount = container.children.length + 1;
@@ -52,9 +48,7 @@
             container.appendChild(div);
         }
 
-        // ฟังก์ชันดึง ID จากแต่ละชื่อยา และเปิดหน้าเว็บเป้าหมาย
         async function processInteractions() {
-            // 1. กวาดข้อมูลจากทุกช่องที่มีคลาส .drug-input และกรองช่องที่ว่างทิ้ง
             const inputs = document.querySelectorAll('.drug-input');
             const drugNames = Array.from(inputs)
                                    .map(el => el.value.trim())
@@ -67,9 +61,8 @@
 
             let drugIds = [];
 
-            // 2. วนลูปยิง API เพื่อดึง ID ของยาทีละตัว
+            // วนลูปยิง API ดึง ID
             for (let name of drugNames) {
-                // เข้ารหัสตัวอักษรเผื่อมีการเว้นวรรค
                 const apiUrl = `https://www.drugs.com/api/autocomplete/?type=interaction&s=${encodeURIComponent(name)}`;
                 
                 try {
@@ -84,10 +77,7 @@
                         // เข้าถึงโครงสร้าง JSON ที่ซ้อนอยู่: categories -> results
                         if (data.categories && data.categories.length > 0 && data.categories[0].results.length > 0) {
                             
-                            // ดึงข้อมูลยาตัวแรกสุดที่ตรงกับคำค้นหา
                             const firstResult = data.categories[0].results[0];
-                            
-                            // ประกอบรหัส ID (ddc_id - brand_name_id) เช่น 1573-0
                             const ddcId = firstResult.ddc_id;
                             const brandId = firstResult.brand_name_id || 0;
                             const fetchedId = `${ddcId}-${brandId}`; 
@@ -97,23 +87,22 @@
                                 console.log(`สำเร็จ: ${name} = ${fetchedId}`);
                             }
                         } else {
-                            console.warn(`ไม่พบข้อมูล ID ของยา: ${name} ในฐานข้อมูล Drugs.com`);
+                            console.warn(`ไม่พบข้อมูล ID ของยา: ${name} ในฐานข้อมูล`);
                         }
                     }
                 } catch (error) {
                     console.error(`Error fetching ID for ${name}:`, error);
                 }
+            }
 
-            // 3. ประกอบร่าง URL และเปิดแท็บใหม่
+            // ประกอบร่าง URL และเปิดแท็บใหม่
             if (drugIds.length >= 2) {
-                // นำ ID มาต่อกันด้วยลูกน้ำ (เช่น 2067-0,276-0) ตามรูปแบบ URL ของ Drugs.com
                 const idString = drugIds.join(',');
                 const targetUrl = `https://www.drugs.com/interaction/list/?drug_list=${idString}`;
                 
-                // เปิดหน้าเว็บใหม่
                 window.open(targetUrl, '_blank');
             } else {
-                alert("ไม่สามารถดึงข้อมูล ID ของยาได้ครบถ้วน (โปรดดู Error ใน Console)");
+                alert("ดึงรหัสยาไม่ครบ โปรดตรวจสอบชื่อยาที่สะกดผิด หรือดู Error ใน Console");
             }
         }
     </script>
