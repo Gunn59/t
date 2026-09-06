@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0d9488">
+<title>Fast LINKS | DDI Checker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#eef2f6; --bg-grad-b:#e4ecf5;
+    --surface:#ffffff; --surface-2:#f8fafc;
+    --text:#0f172a; --text-muted:#64748b; --text-faint:#94a3b8;
+    --border:#e6ebf1;
+    --shadow-sm:0 1px 2px rgba(15,23,42,.04), 0 1px 3px rgba(15,23,42,.06);
+    --shadow-md:0 4px 12px rgba(15,23,42,.08), 0 2px 4px rgba(15,23,42,.04);
+    --radius-lg:20px; --radius-md:14px;
+    --brand-1:#0891b2; --brand-2:#0d9488;
+  }
+  [data-theme="dark"]{
+    --bg:#0b1220; --bg-grad-b:#111a2c;
+    --surface:#161f32; --surface-2:#1c273d;
+    --text:#e8edf5; --text-muted:#9aa8c0; --text-faint:#6b7a95;
+    --border:#26314a;
+    --shadow-sm:0 1px 2px rgba(0,0,0,.3);
+    --shadow-md:0 6px 16px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  body{
+    margin:0; font-family:'Prompt','Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+    background:
+      radial-gradient(1200px 600px at 10% -10%, var(--bg-grad-b) 0%, transparent 60%),
+      radial-gradient(1000px 500px at 100% 0%, var(--bg-grad-b) 0%, transparent 55%),
+      var(--bg);
+    background-attachment:fixed;
+    color:var(--text); transition:background .3s,color .3s;
+    min-height:100vh; padding-bottom:calc(24px + env(safe-area-inset-bottom));
+  }
+  header{
+    position:sticky; top:0; z-index:30;
+    padding:calc(14px + env(safe-area-inset-top)) 16px 16px;
+    background:linear-gradient(135deg,var(--brand-1),var(--brand-2));
+    box-shadow:0 6px 24px rgba(8,145,178,.25);
+    border-radius:0 0 24px 24px;
+  }
+  .header-top{display:flex; justify-content:space-between; align-items:flex-start;}
+  .header-left{display:flex; align-items:center; gap:10px; min-width:0;}
+  .back-btn{
+    flex-shrink:0; width:40px; height:40px; border-radius:12px;
+    background:rgba(255,255,255,.2); border:1px solid rgba(255,255,255,.3);
+    color:#fff; font-size:1.25rem; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; transition:.2s;
+    text-decoration:none;
+  }
+  .back-btn:active{transform:scale(.9);}
+  .brand{display:flex; align-items:center; gap:10px;}
+  .brand-icon{
+    width:40px; height:40px; border-radius:12px; background:rgba(255,255,255,.22);
+    display:flex; align-items:center; justify-content:center; font-size:1.25rem; flex-shrink:0;
+  }
+  .brand h1{color:#fff; font-size:1.02rem; font-weight:700; margin:0;}
+  .brand p{color:rgba(255,255,255,.85); font-size:.68rem; margin:1px 0 0; font-weight:400;}
+  .theme-btn{
+    background:rgba(255,255,255,.2); border:1px solid rgba(255,255,255,.3); color:#fff; border-radius:12px;
+    width:40px; height:40px; font-size:1.1rem; cursor:pointer; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; transition:.2s;
+  }
+  .theme-btn:active{transform:scale(.9);}
+
+  /* ===== DDI Checker UI ===== */
+  main{max-width:600px; margin:0 auto; padding:24px 16px;}
+  
+  .checker-card {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border);
+  }
+
+  .checker-header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  
+  .checker-header h2 {
+    margin: 0 0 6px;
+    font-size: 1.25rem;
+    color: var(--text);
+  }
+  
+  .checker-header p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--text-faint);
+  }
+
+  .input-group { margin-bottom: 16px; }
+  .input-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+  
+  .drug-input {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1.5px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.95rem;
+    outline: none;
+    transition: 0.2s;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,.02);
+  }
+  
+  .drug-input:focus {
+    border-color: var(--brand-2);
+    background: var(--surface);
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+  }
+
+  .action-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  .btn {
+    flex: 1;
+    padding: 14px;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  
+  .btn:active { transform: scale(0.96); }
+  
+  .btn-add {
+    background: var(--surface-2);
+    color: var(--text);
+    border: 1.5px solid var(--border);
+  }
+  .btn-add:hover:not(:disabled) { background: var(--border); }
+  .btn-add:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .btn-submit {
+    background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(8,145,178,.25);
+  }
+  .btn-submit:hover { filter: brightness(1.1); }
+  .btn-submit.loading { opacity: 0.7; cursor: wait; }
+
+  footer{max-width:600px; margin:26px auto 0; padding:16px 20px; color:var(--text-faint); font-size:.7rem; text-align:center; line-height:1.6; border-top:1px solid var(--border);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div class="header-left">
+      <button class="back-btn" onclick="window.history.back()" title="กลับ">←</button>
+      <div class="brand">
+      <div class="brand-icon">⚡</div>
+      <div><h1>Drug Interactions</h1><p>ระบบตรวจสอบการตีกันของยา</p></div>
+      </div>
+    </div>
+    <button class="theme-btn" id="themeToggle" title="สลับธีม">🌙</button>
+  </div>
+</header>
+
+<main>
+  <div class="checker-card">
+    <div class="checker-header">
+      <h2>ตรวจสอบความปลอดภัยทางคลินิก</h2>
+      <p>รองรับสูงสุด 3 รายการต่อครั้ง (อ้างอิง Drugs.com)</p>
+    </div>
+
+    <!-- ฐานข้อมูลตัวเลือกยา (ซ่อนไว้ใช้กับ input) -->
+    <datalist id="drug-list"></datalist>
+
+    <div id="drug-container">
+        <div class="input-group">
+            <label>ยาตัวที่ 1</label>
+            <input type="text" class="drug-input" list="drug-list" placeholder="พิมพ์เพื่อค้นหา..." autocomplete="off">
+        </div>
+        <div class="input-group">
+            <label>ยาตัวที่ 2</label>
+            <input type="text" class="drug-input" list="drug-list" placeholder="พิมพ์เพื่อค้นหา..." autocomplete="off">
+        </div>
+    </div>
+
+    <div class="action-row">
+        <button class="btn btn-add" id="addBtn" onclick="addDrugInput()"><span>+</span> เพิ่มรายการ</button>
+        <button class="btn btn-submit" id="submitBtn" onclick="processInteractions()">ตรวจสอบ (Check)</button>
+    </div>
+  </div>
+</main>
+
+<footer>
+  ⚠️ ข้อมูลนี้จัดทำเพื่อการคัดกรองเบื้องต้นหน้างานเท่านั้น กรุณายืนยันความถูกต้องผ่านแหล่งอ้างอิงมาตรฐานก่อนใช้ทางคลินิกจริงเสมอ
+</footer>
+
+<script>
+// ==================== THEME TOGGLE ====================
+const themeToggle = document.getElementById("themeToggle");
+function applyTheme(t){
+  document.documentElement.setAttribute("data-theme",t);
+  themeToggle.textContent = t==="dark" ? "☀️" : "🌙";
+  document.querySelector('meta[name="theme-color"]').setAttribute("content", t==="dark" ? "#0b1220" : "#0d9488");
+  localStorage.setItem("ddiToolTheme", t);
+}
+themeToggle.addEventListener("click", ()=>{
+  const c = document.documentElement.getAttribute("data-theme");
+  applyTheme(c === "dark" ? "light" : "dark");
+});
+applyTheme(localStorage.getItem("ddiToolTheme") || (window.matchMedia('(prefers-color-scheme: dark)').matches ? "dark" : "light"));
+
+// ==================== DDI CHECKER LOGIC ====================
+// สมมติฐานข้อมูลยาที่ดึงมาจากไฟล์ gemini-code-1788692325223.js
+const drugData = [
+    { name: "Enalapril" }, { name: "Captopril" }, { name: "Lisinopril" }, { name: "Losartan" },
+    { name: "Amlodipine" }, { name: "Atenolol" }, { name: "Carvedilol" }, { name: "Amiodarone" },
+    { name: "Aspirin" }, { name: "Clopidogrel" }, { name: "Warfarin" }, { name: "Simvastatin" },
+    { name: "Atorvastatin" }, { name: "Metformin" }, { name: "Glipizide" }, { name: "Pioglitazone" },
+    { name: "Amoxicillin" }, { name: "Ceftriaxone" }, { name: "Meropenem" }, { name: "Levofloxacin" },
+    { name: "Fluconazole" }, { name: "Ibuprofen" }, { name: "Diclofenac" }, { name: "Tramadol" },
+    { name: "Omeprazole" }, { name: "Domperidone" }, { name: "Salbutamol" }, { name: "Cetirizine" }
+    // สามารถนำ Array ข้อมูลยาเต็มๆ มาวางทับตรงนี้ได้เลย
+];
+
+const dataList = document.getElementById('drug-list');
+const validDrugNames = drugData.map(d => d.name.toLowerCase()); 
+
+drugData.forEach(drug => {
+    const option = document.createElement('option');
+    option.value = drug.name;
+    dataList.appendChild(option);
+});
+
+const MAX_DRUGS = 3;
+
+function addDrugInput() {
+    const container = document.getElementById('drug-container');
+    const inputCount = container.children.length;
+    
+    if (inputCount >= MAX_DRUGS) return;
+    
+    const div = document.createElement('div');
+    div.className = 'input-group';
+    
+    const label = document.createElement('label');
+    label.innerText = `ยาตัวที่ ${inputCount + 1}`;
+    
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'drug-input';
+    input.setAttribute('list', 'drug-list');
+    input.placeholder = 'พิมพ์เพื่อค้นหา...';
+    input.autocomplete = 'off';
+    
+    div.appendChild(label);
+    div.appendChild(input);
+    container.appendChild(div);
+    
+    if (container.children.length >= MAX_DRUGS) {
+        const addBtn = document.getElementById('addBtn');
+        addBtn.disabled = true;
+        addBtn.innerHTML = 'เต็มโควต้า';
+    }
+}
+
+async function processInteractions() {
+    const inputs = document.querySelectorAll('.drug-input');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    const drugNames = Array.from(inputs)
+                           .map(el => el.value.trim())
+                           .filter(val => val !== "");
+
+    if (drugNames.length < 2) {
+        alert("กรุณาเลือกยาอย่างน้อย 2 ตัว");
+        return;
+    }
+
+    const allValid = drugNames.every(name => validDrugNames.includes(name.toLowerCase()));
+    if (!allValid) {
+        alert("กรุณาเลือกชื่อยาจากรายการที่กำหนดให้เท่านั้น");
+        return;
+    }
+
+    submitBtn.innerHTML = "กำลังประมวลผล...";
+    submitBtn.classList.add("loading");
+
+    let drugIds = [];
+
+    for (let name of drugNames) {
+        const apiUrl = `https://www.drugs.com/api/autocomplete/?type=interaction&s=${encodeURIComponent(name)}`;
+        
+        try {
+            const response = await fetch(apiUrl, {
+                method: "GET",
+                headers: { "accept": "application/json" }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                
+                if (data.categories && data.categories.length > 0 && data.categories[0].results.length > 0) {
+                    const firstResult = data.categories[0].results[0];
+                    const fetchedId = `${firstResult.ddc_id}-${firstResult.brand_name_id || 0}`; 
+                    drugIds.push(fetchedId);
+                }
+            }
+        } catch (error) {
+            console.error(`Error fetching ID for ${name}:`, error);
+        }
+    }
+
+    submitBtn.innerHTML = "ตรวจสอบ (Check)";
+    submitBtn.classList.remove("loading");
+
+    if (drugIds.length >= 2) {
+        const idString = drugIds.join(',');
+        const targetUrl = `https://www.drugs.com/interaction/list/?drug_list=${idString}`;
+        window.open(targetUrl, '_blank');
+    } else {
+        alert("ไม่สามารถดึงข้อมูลรหัสยาได้ครบถ้วน (ตรวจสอบ Network/CORS)");
+    }
+}
+</script>
+</body>
+</html>
