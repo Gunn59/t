@@ -80,7 +80,8 @@
 
                     if (response.ok) {
                         const data = await response.json();
-                        
+                        console.log(`ข้อมูลที่ได้ของ ${name}:`, JSON.stringify(data));
+
                         // ตรวจสอบว่ามีข้อมูลส่งกลับมาหรือไม่
                         if (data && data.length > 0) {
                             // *จุดสำคัญ: ตรวจสอบใน F12 (Console) อีกครั้งว่า key ที่เก็บรหัส ID ชื่อว่าอะไร
