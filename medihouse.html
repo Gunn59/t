@@ -1105,13 +1105,12 @@
       text += `------------------------\n`;
       text += `💰 ยอดขายรวม POS: ${formatNumber(rec.totalSales)}\n`;
       text += `💳 ยอดโอน/QR: ${formatNumber(rec.transferAmount)}\n`;
-      text += `📦 ค่าใช้จ่ายเพิ่มเติม: ${formatNumber(rec.cashPaidOut)}\n`;
       
       // ดึงรายการใช้จ่ายจากประวัติมาแสดง
       if (rec.payouts && rec.payouts.length > 0) {
         rec.payouts.forEach(item => {
           const itemTitle = item.title.trim() ? item.title.trim() : 'ไม่ได้ระบุรายการ';
-          text += `   - ${itemTitle}: ${formatNumber(item.amount)}\n`;
+          text += `📦${itemTitle}: ${formatNumber(item.amount)}\n`;
         });
       }
       
