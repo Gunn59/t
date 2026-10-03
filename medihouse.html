@@ -1182,13 +1182,12 @@
       if (calc.discrepancy > 0) diffStr = `เกิน +${formatNumber(calc.discrepancy)} บ. 📈`;
       if (calc.discrepancy < 0) diffStr = `ขาด ${formatNumber(calc.discrepancy)} บ. 📉`;
 
-      let text = `📝 สรุปปิดกะร้านยา (Medihouse)\n`;
+      let text = `📝 นับยอด (Medihouse)\n`;
       text += `📅 วันที่: ${shiftDate} ⏰ เวลานับ: ${countTime} น.\n`;
       text += `👤 ผู้ตรวจนับ: ${cashierName}\n`;
       text += `------------------------\n`;
       text += `💰 ยอดขายรวม POS: ${formatNumber(calc.totalSales)}\n`;
       text += `💳 ยอดโอน/QR: ${formatNumber(calc.transferAmount)}\n`;
-      text += `📦 หยิบจ่ายค่ายา/ของใช้: ${formatNumber(calc.cashPaidOut)}\n`;
       text += `------------------------\n`;
       text += `💵 เงินสดที่นับได้ในเก๊ะ: ${formatNumber(calc.actualCash)}\n`;
       text += `🔒 (หัก) เงินทอนตั้งต้น: 5,000.00\n`;
