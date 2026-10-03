@@ -37,13 +37,12 @@
       background-color: #cbd5e1;
       border-radius: 9999px;
     }
-    /* จัดการการตั้งค่าตอน Print */
+    /* จัดการการตั้งค่าตอน Print ให้เหลือแค่สรุปยอด */
     @media print {
       .no-print { display: none !important; }
       body { background: #ffffff !important; margin: 0; padding: 0; }
       .shadow-sm, .shadow-md, .shadow-lg { box-shadow: none !important; }
       
-      /* ปรับให้การ์ดสรุปขยายเต็มกลางหน้ากระดาษ */
       main { padding: 0 !important; margin-top: 20px !important; }
       .lg\:col-span-5 { 
         grid-column: span 12 / span 12 !important; 
@@ -1005,7 +1004,7 @@
       updateHistoryBadge();
     }
 
-      function renderHistoryTable() {
+    function renderHistoryTable() {
       const records = getLocalRecords();
       const tbody = document.getElementById('historyTbody');
       tbody.innerHTML = '';
@@ -1053,86 +1052,6 @@
         tbody.appendChild(tr);
       });
     }
-
-      records.forEach(rec => {
-        const tr = document.createElement('tr');
-        tr.className = 'hover:bg-slate-50 transition-colors';
-
-        let statusBadge = '';
-        if (rec.status === 'EXACT') {
-          statusBadge = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">ตรงเป๊ะ</span>`;
-        } else if (rec.status === 'OVER') {
-          statusBadge = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-sky-100 text-sky-800">+${formatNumber(rec.discrepancy)}</span>`;
-        } else {
-          statusBadge = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800">-${formatNumber(Math.abs(rec.discrepancy))}</span>`;
-        }
-
-        tr.innerHTML = `
-          <td class="py-3 px-3.5 font-medium text-slate-900">${rec.shiftDate}</td>
-          <td class="py-3 px-3.5 font-semibold text-emerald-800">${rec.countTime} น.</td>
-          <td class="py-3 px-3.5">${escapeHtml(rec.cashierName)}</td>
-          <td class="py-3 px-3.5 text-right font-medium">${formatCurrency(rec.totalSales)}</td>
-          <td class="py-3 px-3.5 text-right text-indigo-600 font-medium">${formatCurrency(rec.transferAmount)}</td>
-          <td class="py-3 px-3.5 text-right font-semibold">${formatCurrency(rec.actualCash)}</td>
-          <td class="py-3 px-3.5 text-right font-bold text-emerald-700">${formatCurrency(rec.netCash)}</td>
-          <td class="py-3 px-3.5 text-right font-mono font-bold">${rec.discrepancy >= 0 ? '+' : ''}${formatCurrency(rec.discrepancy)}</td>
-          <td class="py-3 px-3.5 text-center">${statusBadge}</td>
-          <td class="py-3 px-3.5 text-center">
-            <button onclick="viewRecordDetail('${rec.id}')" class="p-1 text-slate-500 hover:text-emerald-600 transition" title="ดูรายละเอียด">
-              <i class="fa-solid fa-eye"></i>
-            </button>
-            <button onclick="deleteRecord('${rec.id}')" class="p-1 text-slate-400 hover:text-rose-500 transition ml-1" title="ลบ">
-              <i class="fa-solid fa-trash-can"></i>
-            </button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    function copyRecordToLine(id) {
-      const records = getLocalRecords();
-      const rec = records.find(r => r.id === id);
-      if (!rec) return;
-
-      let diffStr = "ตรงเป๊ะ ✅";
-      if (rec.discrepancy > 0) diffStr = `เกิน +${formatNumber(rec.discrepancy)} บ. 📈`;
-      if (rec.discrepancy < 0) diffStr = `ขาด ${formatNumber(rec.discrepancy)} บ. 📉`;
-
-      let text = `📝 สรุปปิดกะร้านยา (Medihouse)\n`;
-      text += `📅 วันที่: ${rec.shiftDate} ⏰ เวลานับ: ${rec.countTime} น.\n`;
-      text += `👤 ผู้ตรวจนับ: ${rec.cashierName}\n`;
-      text += `------------------------\n`;
-      text += `💰 ยอดขายรวม POS: ${formatNumber(rec.totalSales)}\n`;
-      text += `💳 ยอดโอน/QR: ${formatNumber(rec.transferAmount)}\n`;
-      
-      // ดึงรายการใช้จ่ายจากประวัติมาแสดง
-      if (rec.payouts && rec.payouts.length > 0) {
-        rec.payouts.forEach(item => {
-          const itemTitle = item.title.trim() ? item.title.trim() : 'ไม่ได้ระบุรายการ';
-          text += `📦${itemTitle}: ${formatNumber(item.amount)}\n`;
-        });
-      }
-      
-      text += `------------------------\n`;
-      text += `💵 เงินสดที่นับได้ในเก๊ะ: ${formatNumber(rec.actualCash)}\n`;
-      text += `🔒 (หัก) เงินทอนตั้งต้น: ${formatNumber(rec.openingFloat)}\n`;
-      text += `💸 เงินสดนำส่งจริง: ${formatNumber(rec.netCash)}\n`;
-      text += `------------------------\n`;
-      text += `📊 ผลต่างกระทบยอด: ${diffStr}\n`;
-      
-      if (rec.remark && rec.remark !== "-") {
-        text += `📌 หมายเหตุ: ${rec.remark}\n`;
-      }
-
-      navigator.clipboard.writeText(text).then(() => {
-        showToast("คัดลอกประวัติกะสำหรับส่ง LINE เรียบร้อย!", "success");
-      }).catch(err => {
-        alert("ไม่สามารถคัดลอกได้ กรุณาลองใหม่อีกครั้ง");
-        console.error(err);
-      });
-    }
-
 
     function viewRecordDetail(id) {
       const records = getLocalRecords();
@@ -1280,7 +1199,7 @@
 
       let diffStr = "ตรงเป๊ะ ✅";
       if (calc.discrepancy > 0) diffStr = `เกิน +${formatNumber(calc.discrepancy)} บ. 📈`;
-      if (calc.discrepancy < 0) diffStr = `ขาด ${formatNumber(calc.discrepancy)} บ. 📉`;
+      if (calc.discrepancy < 0) diffStr = `ขาด ${formatNumber(Math.abs(calc.discrepancy))} บ. 📉`;
 
       let text = `📝 สรุปปิดกะร้านยา (Medihouse)\n`;
       text += `📅 วันที่: ${shiftDate} ⏰ เวลานับ: ${countTime} น.\n`;
@@ -1289,9 +1208,17 @@
       text += `💰 ยอดขายรวม POS: ${formatNumber(calc.totalSales)}\n`;
       text += `💳 ยอดโอน/QR: ${formatNumber(calc.transferAmount)}\n`;
       text += `📦 ค่าใช้จ่ายเพิ่มเติม: ${formatNumber(calc.cashPaidOut)}\n`;
+      
+      if (payoutItems.length > 0) {
+        payoutItems.forEach(item => {
+          const itemTitle = item.title.trim() ? item.title.trim() : 'ไม่ได้ระบุรายการ';
+          text += `   - ${itemTitle}: ${formatNumber(item.amount)}\n`;
+        });
+      }
+
       text += `------------------------\n`;
       text += `💵 เงินสดที่นับได้ในเก๊ะ: ${formatNumber(calc.actualCash)}\n`;
-      text += `🔒 (หัก) เงินทอนตั้งต้น: 5,000.00\n`;
+      text += `🔒 (หัก) เงินทอนตั้งต้น: ${formatNumber(calc.openingFloat)}\n`;
       text += `💸 เงินสดนำส่งจริง: ${formatNumber(calc.netCash)}\n`;
       text += `------------------------\n`;
       text += `📊 ผลต่างกระทบยอด: ${diffStr}\n`;
@@ -1302,6 +1229,50 @@
 
       navigator.clipboard.writeText(text).then(() => {
         showToast("คัดลอกข้อความสำหรับส่ง LINE เรียบร้อย!", "success");
+      }).catch(err => {
+        alert("ไม่สามารถคัดลอกได้ กรุณาลองใหม่อีกครั้ง");
+        console.error(err);
+      });
+    }
+
+    function copyRecordToLine(id) {
+      const records = getLocalRecords();
+      const rec = records.find(r => r.id === id);
+      if (!rec) return;
+
+      let diffStr = "ตรงเป๊ะ ✅";
+      if (rec.discrepancy > 0) diffStr = `เกิน +${formatNumber(rec.discrepancy)} บ. 📈`;
+      if (rec.discrepancy < 0) diffStr = `ขาด ${formatNumber(Math.abs(rec.discrepancy))} บ. 📉`;
+
+      let text = `📝 สรุปปิดกะร้านยา (Medihouse)\n`;
+      text += `📅 วันที่: ${rec.shiftDate} ⏰ เวลานับ: ${rec.countTime} น.\n`;
+      text += `👤 ผู้ตรวจนับ: ${rec.cashierName}\n`;
+      text += `------------------------\n`;
+      text += `💰 ยอดขายรวม POS: ${formatNumber(rec.totalSales)}\n`;
+      text += `💳 ยอดโอน/QR: ${formatNumber(rec.transferAmount)}\n`;
+      text += `📦 ค่าใช้จ่ายเพิ่มเติม: ${formatNumber(rec.cashPaidOut)}\n`;
+      
+      // ดึงรายการใช้จ่ายจากประวัติมาแสดง
+      if (rec.payouts && rec.payouts.length > 0) {
+        rec.payouts.forEach(item => {
+          const itemTitle = item.title.trim() ? item.title.trim() : 'ไม่ได้ระบุรายการ';
+          text += `   - ${itemTitle}: ${formatNumber(item.amount)}\n`;
+        });
+      }
+      
+      text += `------------------------\n`;
+      text += `💵 เงินสดที่นับได้ในเก๊ะ: ${formatNumber(rec.actualCash)}\n`;
+      text += `🔒 (หัก) เงินทอนตั้งต้น: ${formatNumber(rec.openingFloat)}\n`;
+      text += `💸 เงินสดนำส่งจริง: ${formatNumber(rec.netCash)}\n`;
+      text += `------------------------\n`;
+      text += `📊 ผลต่างกระทบยอด: ${diffStr}\n`;
+      
+      if (rec.remark && rec.remark !== "-") {
+        text += `📌 หมายเหตุ: ${rec.remark}\n`;
+      }
+
+      navigator.clipboard.writeText(text).then(() => {
+        showToast("คัดลอกประวัติกะสำหรับส่ง LINE เรียบร้อย!", "success");
       }).catch(err => {
         alert("ไม่สามารถคัดลอกได้ กรุณาลองใหม่อีกครั้ง");
         console.error(err);
